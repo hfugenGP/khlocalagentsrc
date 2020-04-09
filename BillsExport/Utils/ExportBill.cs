@@ -25,12 +25,15 @@ namespace BillsExport.Utils
                 }
                 else
                 {
-                    Console.WriteLine("Empty");
+                    Console.WriteLine("Invoice export completed.\n");
                 }
             }
             catch(Exception ex)
             {
+                Console.WriteLine("==========================================\n");
+                Console.WriteLine("From Export:\n");
                 Console.WriteLine(ex.Message);
+                Console.WriteLine("==========================================\n");
             }
         }
     }

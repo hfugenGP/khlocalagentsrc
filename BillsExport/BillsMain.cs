@@ -15,16 +15,20 @@ namespace BillsExport
         public void buildExport()
         {
             Fbexplore fbexplore = new Fbexplore(ConfigurationManager.AppSettings["estream"]);
+            
             if (!String.IsNullOrEmpty(fbexplore.LatestPath))
             {
-                Console.WriteLine($"Attempting to connect to latest DB : {fbexplore.LatestPath}\n");
-
+                Console.WriteLine($"Attempting to connect to latest DB : {fbexplore.LatestPath}\n"); 
                 try
                 {
-                    Console.WriteLine($"Checking invoices for the past {ConfigurationManager.AppSettings["datespan"]}\n");
+                    // ===================================
+                    //  Export new invoices to kiple home
+                    // ===================================
+
+                    Console.WriteLine($"Checking invoices for the past {ConfigurationManager.AppSettings["datespan"]} days.\n");
 
                     Ariv ariv = new Ariv(fbexplore.LatestPath);
-                    FbDataReader invoices = ariv.queryInvoice(); 
+                    FbDataReader invoices = ariv.queryInvoice();
 
                     if (invoices.HasRows)
                     {
@@ -32,33 +36,59 @@ namespace BillsExport
 
                         if (posthocBill.InvoiceLst.Count() != 0)
                         {
-                            Console.WriteLine($"Record count: {posthocBill.InvoiceLst.Count()}\n");
+                            Console.WriteLine($"Invoice count: {posthocBill.InvoiceLst.Count()}\n");
                             ExportBill.dump(posthocBill.InvoiceLst, 0);
+                        }
+                        else
+                        {
+                            Console.WriteLine($"No invoice(s) found for the past {ConfigurationManager.AppSettings["datespan"]} days.\n");
                         }
                     }
                     else
                     {
-                        Console.WriteLine($"No invoice(s) found for the past {ConfigurationManager.AppSettings["datespan"]}\n");
-                    }
+                        Console.WriteLine($"No invoice(s) found for the past {ConfigurationManager.AppSettings["datespan"]} days.\n");
+                    } 
 
-                    // Check for payments. 
-                    Console.WriteLine("Checking for pending payments...\n");
+                    // ===================================================================================
+                    //  Check kiple home for pending invoices. Export payments back to kiple home if any.
+                    // ===================================================================================
+
+                    Console.WriteLine("Checking for pending payments: Connecting to Kiple Home ...\n");
                     AssertBills assertBills = new AssertBills();
-                    if (assertBills.Bills.Count != 0)
+                    if (!(assertBills.Bills is null) && assertBills.Bills.Count != 0)
                     {
-                        Console.WriteLine($"Outstanding Bills: {assertBills.Bills.Count}");
+                        Console.WriteLine($"Outstanding Bills from KipleHome : {assertBills.Bills.Count} \n");
                         UpdateBills updateBills = new UpdateBills(assertBills.Bills, fbexplore.LatestPath);
                         updateBills.exportPayment();
                     }
                     else
                     {
-                        Console.WriteLine("No outstanding bills.");
+                        Console.WriteLine("No outstanding bills. \n");
                     }
 
+                    // =====================================================
+                    //  Check kiple home for payments made through KipleBiz
+                    // ===================================================== 
+
+                    Console.WriteLine("Checking for payments made via KipleHome App ... \n");
+                    AdyenPayment adyenPayment = new AdyenPayment();
+                    if (!(adyenPayment.Payments is null) && adyenPayment.Payments.Count != 0)
+                    {
+                        Console.WriteLine($"Inserting {adyenPayment.Payments.Count} payment(s) to local database ... \n");
+                        MakePayment makePayment = new MakePayment(adyenPayment.Payments, fbexplore.LatestPath);
+                        makePayment.insertPayments();
+                    }
+                    else 
+                    {
+                        Console.WriteLine("No payments made through KipleHome App. \n");
+                    }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
-                    Console.WriteLine(ex.Message);
+                    Console.WriteLine("====================================================================================\n");
+                    Console.WriteLine("From Main:\n");                     
+                    Console.WriteLine(ex);
+                    Console.WriteLine("====================================================================================\n");
                 }
             }
         }

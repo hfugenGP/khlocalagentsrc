@@ -22,6 +22,6 @@ namespace BillsExport.Interface
         int reminder_days { get; set; }
         string floor { get; set; }
         string unit { get; set; }
-        string res_uuid { get; set; }
+        string residence_uuid { get; set; }
     }
 }

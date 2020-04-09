@@ -36,8 +36,9 @@ namespace BillsExport.Utils
                     string latestPath = fileInfo.ToString();
                     if (!String.IsNullOrEmpty(latestPath))
                     {
-                        LatestPath = $"{Directory.GetCurrentDirectory()}\\{latestPath}";
-                        System.IO.File.Copy($"{_dbpath}\\{latestPath}", LatestPath, true);
+                        LatestPath = $"{_dbpath}\\{latestPath}"; ;
+                        // LatestPath = $"{Directory.GetCurrentDirectory()}\\{latestPath}";
+                        // System.IO.File.Copy($"{_dbpath}\\{latestPath}", LatestPath, true);
                     }
                 }                
             }

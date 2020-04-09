@@ -2,7 +2,6 @@
 using FirebirdSql.Data.FirebirdClient;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -10,56 +9,36 @@ using System.Threading.Tasks;
 
 namespace BillsExport.Models
 {
-    class Ariv : Fbdbconn
+    class Arcustomer : Fbdbconn
     {
-        private DateTime _endDate;
-        private DateTime _startDate;
         private string _table;
 
-        public Ariv(string dbpath) : base(dbpath)
+        public Arcustomer(string dbpath) : base(dbpath)
         {
-            _endDate = DateTime.Now;
-            _startDate = _endDate.AddDays(int.Parse($"-{ConfigurationManager.AppSettings["datespan"]}"));
-            _table = "AR_IV";
+            _table = "AR_CUSTOMER";
         }
 
-        public int DOCKEY
+        public string CODE
+        {
+            get;
+            private set;
+        }
+
+        public string COMPANYNAME
+        {
+            get;
+            private set;
+        }
+
+        public float OUTSTANDING
         {
             get;
             set;
         }
 
-        public string DOCNO
+        public void findBycode(string code)
         {
-            get;
-            set;
-        }
-
-        public float DOCAMT
-        {
-            get;
-            set;
-        }
-
-        public float PAYMENTAMT
-        {
-            get;
-            set;
-        }
-
-        public FbDataReader queryInvoice()
-        {
-            string filter = $"POSTDATE BETWEEN '{_startDate.ToString("dd.MM.yyyy")}' AND '{_endDate.ToString("dd.MM.yyyy")}'";
-            return this.select(_table, filter);
-        }
-
-        public void checkPayment(string invoiceno)
-        {
-            DOCKEY = 0;
-            DOCNO = "";
-            DOCAMT = 0;
-            PAYMENTAMT = 0;
-            string filter = $"DOCNO = '{invoiceno}'";
+            string filter = $"CODE = '{code}'";
             FbDataReader dataReader = this.select(_table, filter);
             if (dataReader.HasRows)
             {
@@ -69,10 +48,9 @@ namespace BillsExport.Models
                     dataReader.GetValues(values);
                     try
                     {
-                        DOCKEY = (values[0] != null ? int.Parse(values[0].ToString()) : 0);
-                        DOCNO = (values[1] != null ? values[1].ToString() : "");
-                        DOCAMT = (values[16] != null ? float.Parse(values[16].ToString()) : 0);
-                        PAYMENTAMT = (values[18] != null ? float.Parse(values[18].ToString()) : 0);
+                        CODE = (values[0] != null ? values[0].ToString() : "");
+                        COMPANYNAME = (values[2] != null ? values[2].ToString() : "");
+                        OUTSTANDING = (values[13] != null ? float.Parse(values[13].ToString()) : 0);
                     }
                     catch (Exception ex)
                     {
@@ -82,16 +60,16 @@ namespace BillsExport.Models
             }
         }
 
-        public void Update(string invoiceno)
+        public void Update(string code)
         {
             try
             {
                 string values = "";
-                foreach (PropertyInfo prop in typeof(Ariv).GetProperties())
+                foreach (PropertyInfo prop in typeof(Arcustomer).GetProperties())
                 {
                     if (prop.GetValue(this) != null)
                     {
-                        if (prop.PropertyType.ToString() == "System.String" )
+                        if (prop.PropertyType.ToString() == "System.String")
                         {
                             values += prop.Name + " = '" + prop.GetValue(this) + "',";
                         }
@@ -103,7 +81,7 @@ namespace BillsExport.Models
                 }
                 if (!String.IsNullOrEmpty(values))
                 {
-                    update(_table, values.Substring(0, values.Length - 1), $"DOCNO = '{invoiceno}'");
+                    update(_table, values.Substring(0, values.Length - 1), $"CODE = '{code}'");
                 }
             }
             catch (Exception ex)

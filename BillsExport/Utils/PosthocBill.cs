@@ -31,30 +31,49 @@ namespace BillsExport.Utils
             {
                 object[] values = new object[_invoices.FieldCount];
                 _invoices.GetValues(values);
-                BillingInvoice item = new BillingInvoice();
+                BillingInvoice item = new BillingInvoice(); 
                 string[] unitInfo = _extractUnit(values[3]);
                 item.reference_id = values[1].ToString();
                 item.description = values[10].ToString();
                 item.project_code = values[13].ToString();
-                item.status = _billStatus(values[9], values[7], values[18]);
+                item.status = _billStatus(values[9], values[17], values[18]);
                 item.due_at = Convert.ToDateTime(values[9].ToString()).ToString("yyyy-MM-dd");
-                item.block = "Unit";
-                item.floor = (unitInfo[0] != "" ? unitInfo[0] : "");
-                item.unit = (unitInfo[1] != "" ? unitInfo[1] : "");
+
+                /*
+                 * ======================================
+                 *  Use this unit format for Menara Geno
+                 *  =====================================
+                 */
+                item.block = (_withInBounds(2, unitInfo) ? unitInfo[2] : "Unit");
+                item.floor = (_withInBounds(0, unitInfo) ? unitInfo[0] : "");
+                item.unit = (_withInBounds(1, unitInfo) ? unitInfo[1] : "");
+
+                /*
+                 * ======================================
+                 *    Use this for all other clients.
+                 * ======================================   
+                 */
+
+                /*
+                item.block = (_withInBounds(0, unitInfo) ? unitInfo[0] : "Unit");
+                item.floor = (_withInBounds(1, unitInfo) ? unitInfo[1] : "");
+                item.unit = (_withInBounds(2, unitInfo) ? unitInfo[2] : "");
+                */
+
                 item.currency = "RM";
                 item.amount_cents = _amountToCents(values[17]);
                 item.outstanding_amount_cents = _outStandingAmount(values[17], values[18]);
                 item.reminder_days = int.Parse(values[8].ToString().Substring(0, values[8].ToString().IndexOf(@"Days")));
                 item.type = _billType(values[13]);
                 item.billing_date = Convert.ToDateTime(values[5].ToString()).ToString("yyyy-MM-dd");
-                item.res_uuid = ConfigurationManager.AppSettings["uuid"];
+                item.residence_uuid = ConfigurationManager.AppSettings["uuid"];
                 InvoiceLst.Add(item);
             }
         }
 
         private string[] _extractUnit(object code)
         {
-            string[] unit = new string[2];
+            string[] unit = new string[3];
             if (code.ToString() != "")
             {
                 unit = code.ToString().Substring(1, code.ToString().Length - 1).Split('-');
@@ -94,7 +113,10 @@ namespace BillsExport.Utils
 
         private int _amountToCents(object amount)
         {
-            return (int)float.Parse(amount.ToString()) * 100;
+            float fl = float.Parse(amount.ToString()) * 100;
+            int iFl = Convert.ToInt32(fl);
+            // return (int)float.Parse(amount.ToString()) * 100;
+            return iFl;
         }
 
         private int _outStandingAmount(object amountdue, object amountpaid)
@@ -117,6 +139,21 @@ namespace BillsExport.Utils
                     break;
             }
             return type;
+        } 
+
+        /**
+         * Check if array index is within 
+         * the array length.
+         * 
+         */
+        private bool _withInBounds<T>(int index, T[] array)
+        {
+            bool withIn = false; 
+            if (index >= 0 && index < array.Length)
+            {
+                withIn = true;
+            }
+            return withIn;
         }
     }
 }

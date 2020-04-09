@@ -24,7 +24,12 @@ namespace PatchTool
                 Console.WriteLine("Fetching...");
                 
                 build.fetchRequest(ConfigurationManager.AppSettings["patchdir"]);
-                build.pullRequest(ConfigurationManager.AppSettings["patchdir"]);
+                bool uptodate = build.pullRequest(ConfigurationManager.AppSettings["patchdir"]); 
+
+                if (uptodate)
+                {
+                    Console.WriteLine("Patch successful, you may close this window.");
+                }
             } 
             else
             {

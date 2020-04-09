@@ -13,12 +13,16 @@ namespace BillsExport.Utils
         private List<OutstandingBill> _outStandingBills;
         private string _dbpath;
         private List<OutstandingBill> _updatedBills;
+        private Arpm _arpm;
+        private Ariv _ariv;
 
         public UpdateBills(List<OutstandingBill> outstandingBills, string dbpath)
         {
             _outStandingBills = outstandingBills;
             _dbpath = dbpath;
             _updatedBills = new List<OutstandingBill>();
+            _arpm = new Arpm(_dbpath);
+            _ariv = new Ariv(_dbpath);
             _checkPayment();
         }
 
@@ -26,17 +30,23 @@ namespace BillsExport.Utils
         {
             foreach(OutstandingBill bill in _outStandingBills)
             {
-                Arpm arpm = _verifyPayment(bill.reference_id);
-                if (!String.IsNullOrEmpty(arpm.DESCRIPTION))
+                _ariv.checkPayment(bill.reference_id);
+                if (!String.IsNullOrEmpty(_ariv.DOCNO) && _ariv.PAYMENTAMT != 0)
                 {
+                    // Console.WriteLine(bill.reference_id + " " + _ariv.PAYMENTAMT); 
+                    Console.WriteLine(_ariv.DOCNO + " " + _ariv.PAYMENTAMT);
                     OutstandingBill outstandingBill = new OutstandingBill();
-                    int balance = _adjustBalance(bill.outstanding_amount_cents, double.Parse(arpm.DOCAMT));
+                    int balance = _adjustBalance(_ariv.DOCAMT, _ariv.PAYMENTAMT);
                     outstandingBill.uuid = bill.uuid;
                     outstandingBill.reference_id = bill.reference_id;
                     outstandingBill.amount_cents = bill.amount_cents;
                     outstandingBill.outstanding_amount_cents = balance;
                     outstandingBill.status = _setStatus(balance, bill.status);
                     _updatedBills.Add(outstandingBill);
+                }
+                else
+                {
+                    Console.WriteLine($"No payment found for : {bill.reference_id}");
                 }
             }
         }
@@ -47,15 +57,15 @@ namespace BillsExport.Utils
          */
         private Arpm _verifyPayment(string refid)
         {
-            Arpm arpm = new Arpm(_dbpath);
-            arpm.payment(refid);
-            return arpm;
+            // Arpm arpm = new Arpm(_dbpath);
+            _arpm.payment(refid);
+            return _arpm;
         }
 
-        private int _adjustBalance(int balance, double payment)
+        private int _adjustBalance(double balance, double payment)
         {
             int outstanding = 0;
-            outstanding = balance - (int)(payment * 10);
+            outstanding = (int)(balance - payment) * 100;
             return outstanding;
         }
 
@@ -77,8 +87,12 @@ namespace BillsExport.Utils
         {
             if (_updatedBills.Count != 0)
             {
-                Console.WriteLine($"Payment count: {_updatedBills.Count}");
+                Console.WriteLine($"Payment count: {_updatedBills.Count} \n");
                 _sendPayment(_updatedBills, 0);
+            }
+            else
+            {
+                Console.WriteLine($"No Payments found for outstanding bills. \n");
             }
         }
 
@@ -96,12 +110,15 @@ namespace BillsExport.Utils
                 }
                 else
                 {
-                    Console.WriteLine("No more payments to send.");
+                    Console.WriteLine("Done exporting payments.\n");
                 }
             }
             catch(Exception ex)
             {
+                Console.WriteLine("==========================================\n");
+                Console.WriteLine("From Update:\n");
                 Console.WriteLine(ex.Message);
+                Console.WriteLine("==========================================\n");
             }
         }
     }

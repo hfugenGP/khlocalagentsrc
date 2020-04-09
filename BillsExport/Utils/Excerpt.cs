@@ -18,7 +18,12 @@ namespace BillsExport.Utils
             endIndex = (endIndex < 0) ? list.Count + endIndex : endIndex;
 
             startIndex = Math.Max(startIndex, 0);
-            endIndex = Math.Min(endIndex, list.Count - 1); 
+            endIndex = Math.Min(endIndex, (list.Count > end ? list.Count - 1 : list.Count));
+
+            if (list.Count == 1)
+            {
+                endIndex = 1;
+            }
 
             if (list == null)
             {

@@ -50,8 +50,8 @@ namespace BillsExport.Utils
         {
             if (restResponse.StatusCode == HttpStatusCode.OK && restResponse.Content.Length != 0)
             {
-                BillResult billResult = JsonConvert.DeserializeObject<BillResult>(restResponse.Content);
-                Bills = billResult.outstandingBills;
+                BillResult billResult = JsonConvert.DeserializeObject<BillResult>(restResponse.Content); 
+                Bills = billResult.result;
             }
         }
     }

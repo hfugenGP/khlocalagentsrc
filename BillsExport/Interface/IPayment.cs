@@ -13,6 +13,6 @@ namespace BillsExport.Interface
         string DOCDATE { get; }
         string POSTDATE { get; }
         string DESCRIPTION { get; }
-        string DOCAMT { get; }
+        float DOCAMT { get; }
     }
 }

@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace BillsExport.Models
 {
-    class BillResult
+    class PaymentResult
     {
         public string status { get; set; }
-        // public List<OutstandingBill> outstandingBills { get; set; }
-        public List<OutstandingBill> result { get; set; }
+        public List<AppPayments> result { get; set; }
     }
 }

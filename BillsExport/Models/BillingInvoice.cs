@@ -23,6 +23,6 @@ namespace BillsExport.Models
         public int reminder_days { get; set; }
         public string floor { get; set; }
         public string unit { get; set; }
-        public string res_uuid { get; set; }
+        public string residence_uuid { get; set; }
     }
 }
