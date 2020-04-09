@@ -84,8 +84,8 @@ namespace PatchWork
                 var co = new CloneOptions();
                 co.CredentialsProvider = (_url, _user, _cred) => new UsernamePasswordCredentials
                 {
-                    Username = "hfugenGP",
-                    Password = "d5620194b56ae562becfdeb5f75943ebbbf91354"
+                    Username = "",
+                    Password = ""
                 };
                 path = Repository.Clone(repository, directory, co);
             }
