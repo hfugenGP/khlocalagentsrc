@@ -52,8 +52,8 @@ namespace PatchWork
                         (url, usernameFromUrl, types) =>
                         new UsernamePasswordCredentials()
                         {
-                            Username = "test",
-                            Password = "test"
+                            Username = "hfugenGP",
+                            Password = "676c7c4bbf388e5fbb4832d0473d96015f89b2bf"
                         }
                     );
                     pullOptions.MergeOptions = new MergeOptions();
@@ -84,8 +84,8 @@ namespace PatchWork
                 var co = new CloneOptions();
                 co.CredentialsProvider = (_url, _user, _cred) => new UsernamePasswordCredentials
                 {
-                    Username = "test",
-                    Password = "test"
+                    Username = "hfugenGP",
+                    Password = "676c7c4bbf388e5fbb4832d0473d96015f89b2bf"
                 };
                 path = Repository.Clone(repository, directory, co);
             }

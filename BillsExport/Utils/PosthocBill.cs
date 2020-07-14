@@ -31,8 +31,24 @@ namespace BillsExport.Utils
             {
                 object[] values = new object[_invoices.FieldCount];
                 _invoices.GetValues(values);
-                BillingInvoice item = new BillingInvoice(); 
-                string[] unitInfo = _extractUnit(values[3]);
+                BillingInvoice item = new BillingInvoice();
+
+                /**
+                 * ============================================
+                 *  Use this for Menara Geno
+                 * ============================================
+                 */
+
+                // string[] unitInfo = _extractUnit(values[3]); 
+
+                /**
+                 * ============================================
+                 *  Use this for all other clients
+                 * ============================================
+                 */
+
+                string[] unitInfo = _extractUnitGen(values[3]);
+
                 item.reference_id = values[1].ToString();
                 item.description = values[10].ToString();
                 item.project_code = values[13].ToString();
@@ -44,9 +60,12 @@ namespace BillsExport.Utils
                  *  Use this unit format for Menara Geno
                  *  =====================================
                  */
-                item.block = (_withInBounds(2, unitInfo) ? unitInfo[2] : "Unit");
+                
+                
+                /*item.block = (_withInBounds(2, unitInfo) ? unitInfo[2] : "Unit");
                 item.floor = (_withInBounds(0, unitInfo) ? unitInfo[0] : "");
-                item.unit = (_withInBounds(1, unitInfo) ? unitInfo[1] : "");
+                item.unit = (_withInBounds(1, unitInfo) ? unitInfo[1] : "");*/
+                
 
                 /*
                  * ======================================
@@ -54,11 +73,12 @@ namespace BillsExport.Utils
                  * ======================================   
                  */
 
-                /*
+                
                 item.block = (_withInBounds(0, unitInfo) ? unitInfo[0] : "Unit");
                 item.floor = (_withInBounds(1, unitInfo) ? unitInfo[1] : "");
                 item.unit = (_withInBounds(2, unitInfo) ? unitInfo[2] : "");
-                */
+                
+                
 
                 item.currency = "RM";
                 item.amount_cents = _amountToCents(values[17]);
@@ -71,12 +91,27 @@ namespace BillsExport.Utils
             }
         }
 
+
+        // Use this for Menara Geno
+
         private string[] _extractUnit(object code)
         {
             string[] unit = new string[3];
             if (code.ToString() != "")
             {
-                unit = code.ToString().Substring(1, code.ToString().Length - 1).Split('-');
+                //unit = code.ToString().Substring(1, code.ToString().Length - 1).Split('-');
+                unit = code.ToString().Trim().Split('-');
+            }
+            return unit;
+        }
+
+        // Use this for all other clients
+        private string[] _extractUnitGen(object code)
+        {
+            string[] unit = new string[3];
+            if (code.ToString() != "")
+            {
+                unit = code.ToString().Split('-');
             }
             return unit;
         }

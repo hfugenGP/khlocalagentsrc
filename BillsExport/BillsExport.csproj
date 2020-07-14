@@ -67,6 +67,8 @@
     <Compile Include="Interface\IGetPayments.cs" />
     <Compile Include="Interface\IGltrans.cs" />
     <Compile Include="Interface\IApknockoff.cs" />
+    <Compile Include="Interface\IGlcb.cs" />
+    <Compile Include="Interface\IGlcbdtl.cs" />
     <Compile Include="Interface\ISysdocnodtl.cs" />
     <Compile Include="Interface\IPayment.cs" />
     <Compile Include="Interface\IOutstandingBill.cs" />
@@ -77,6 +79,9 @@
     <Compile Include="Models\AppPayments.cs" />
     <Compile Include="Models\Arcustomer.cs" />
     <Compile Include="Models\Apknockoff.cs" />
+    <Compile Include="Models\BillExportLogs.cs" />
+    <Compile Include="Models\Glcbdtl.cs" />
+    <Compile Include="Models\Glcb.cs" />
     <Compile Include="Models\Officialreceipts.cs" />
     <Compile Include="Models\Sysdocnodtl.cs" />
     <Compile Include="Models\Gltrans.cs" />

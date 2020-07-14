@@ -128,11 +128,29 @@ namespace BillsExport.Models
             set;
         }
 
-        /*public string UDF_POSTDN
+        public string AGENT
         {
             get;
             set;
-        }*/
+        }
+
+        public string PROJECT
+        {
+            get;
+            set;
+        }
+
+        public string UDF_POSTDN
+        {
+            get;
+            set;
+        }
+
+        public string UDF_TAXRATE
+        {
+            get;
+            set;
+        }
 
         /**
          * Check latest payment

@@ -12,7 +12,12 @@ namespace BillsExport.Interface
         string CODE { get; }
         string DOCDATE { get; }
         string POSTDATE { get; }
-        string DESCRIPTION { get; }
+        string DESCRIPTION { get; } 
+        string AGENT { get; }
+        string PROJECT { get; }
+        string CANCELLED { get; } 
+        string UDF_POSTDN { get; }
+        string UDF_TAXRATE { get; }
         float DOCAMT { get; }
     }
 }

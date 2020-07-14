@@ -18,8 +18,11 @@ namespace BillsExport.Models
 
         public Ariv(string dbpath) : base(dbpath)
         {
-            _endDate = DateTime.Now;
-            _startDate = _endDate.AddDays(int.Parse($"-{ConfigurationManager.AppSettings["datespan"]}"));
+
+            _endDate = DateTime.Now.AddDays(int.Parse(ConfigurationManager.AppSettings["datespan"]));
+            // _endDate = DateTime.Now;
+            // _startDate = _endDate.AddDays(int.Parse($"-{ConfigurationManager.AppSettings["datespan"]}"));
+            _startDate = DateTime.Now.AddDays(int.Parse($"-{ConfigurationManager.AppSettings["datespan"]}"));
             _table = "AR_IV";
         }
 
@@ -49,7 +52,7 @@ namespace BillsExport.Models
 
         public FbDataReader queryInvoice()
         {
-            string filter = $"POSTDATE BETWEEN '{_startDate.ToString("dd.MM.yyyy")}' AND '{_endDate.ToString("dd.MM.yyyy")}'";
+            string filter = $"POSTDATE BETWEEN '{_startDate.ToString("dd.MM.yyyy")}' AND '{_endDate.ToString("dd.MM.yyyy")}'"; 
             return this.select(_table, filter);
         }
 

@@ -145,5 +145,33 @@ namespace BillsExport.Service
                 Console.WriteLine($"{restResponse.Content}\n");
             }
         }
+
+        public void writeLogs()
+        {
+            BillExportLogs billExportLogs = new BillExportLogs()
+            {
+                residence_uuid = ConfigurationManager.AppSettings["uuid"],
+                created_at = DateTime.Now
+            };
+
+            var body = new
+            {
+                resource = billExportLogs
+            };
+            
+            RestClient restClient = new RestClient(ConfigurationManager.AppSettings["logs"]);
+            RestRequest restRequest = new RestRequest("", Method.POST);
+            restRequest.AddHeader("X-Application-Key", _apiKey);
+            restRequest.AddParameter("application/json; charset=utf-8", JsonConvert.SerializeObject(body), ParameterType.RequestBody);
+            IRestResponse restResponse = restClient.Execute(restRequest);
+            if (restResponse.StatusCode != 0)
+            {
+                Console.WriteLine($"{restResponse.Content}\n");
+            }
+            else
+            {
+                Console.WriteLine($"Failed to export logs: {restResponse.ErrorMessage}\n");
+            }
+        }
     }
 }

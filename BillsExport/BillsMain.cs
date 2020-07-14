@@ -1,4 +1,5 @@
 ﻿using BillsExport.Models;
+using BillsExport.Service;
 using BillsExport.Utils;
 using FirebirdSql.Data.FirebirdClient;
 using System;
@@ -82,6 +83,13 @@ namespace BillsExport
                     {
                         Console.WriteLine("No payments made through KipleHome App. \n");
                     }
+
+                    // =====================================================
+                    //  Write Logs
+                    // =====================================================
+                    Console.WriteLine("Exporting Logs. \n");
+                    KipleHomeService kipleHomeService = new KipleHomeService();
+                    kipleHomeService.writeLogs();
                 }
                 catch (Exception ex)
                 {

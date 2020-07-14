@@ -16,11 +16,12 @@ namespace khLocalAgent
         {
             Console.WriteLine("kipleHome Local Agent\n");
 
-            Console.WriteLine("Checking for updates...\n"); 
+            Console.WriteLine("Checking for updates...\n");
 
             // Check for updates
-            Build build = new Build();
-            bool uptodate = build.pullRequest(ConfigurationManager.AppSettings["target"]);
+            // Build build = new Build();
+            // bool uptodate = build.pullRequest(ConfigurationManager.AppSettings["target"]);
+            bool uptodate = true;
 
             if (uptodate)
             {
@@ -36,7 +37,7 @@ namespace khLocalAgent
                Console.WriteLine("Close this application then run the PatchTool.\n");
             }
 
-            Console.ReadKey();
+            // Console.ReadKey();
         }
 
         /**

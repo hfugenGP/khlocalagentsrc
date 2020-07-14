@@ -39,17 +39,19 @@ namespace BillsExport.Utils
                 if (!String.IsNullOrEmpty(ariv.DOCNO))
                 {
                     Console.WriteLine($"Recording the amount of {_convertAmount(payment.amount_paid)} for invoice : {payment.invoice_no}\n");
-                    
-                    _addGltrans(payment, "M", $"N{payment.code}", gltransid);
-                    _addGltrans(payment, "S", "310-210", gltransid);
 
-                    int paymentDockey = _addPayment(payment, $"N{payment.code}", gltransid);
+                    // _addGltrans(payment, "M", $"N{payment.code}", gltransid); 
+                    _addGltrans(payment, "M", $"{payment.unit_name}", gltransid);
+                    _addGltrans(payment, "S", "310-000", gltransid);
+
+                    int paymentDockey = _addPayment(payment, $"{payment.unit_name}", gltransid);
                     _addKnockoff(payment, ariv.DOCKEY, paymentDockey);
                     Console.WriteLine($"{ariv.PAYMENTAMT} + {_convertAmount(payment.amount_paid)}");
                     ariv.PAYMENTAMT = ariv.PAYMENTAMT + _convertAmount(payment.amount_paid);
                     ariv.Update(ariv.DOCNO);
 
-                    _adjustCustomerOutstanding(payment.amount_paid, $"N{payment.code}");
+                    // _adjustCustomerOutstanding(payment.amount_paid, $"N{payment.code}"); 
+                    _adjustCustomerOutstanding(payment.amount_paid, $"{payment.unit_name}");
 
                     Console.WriteLine($"Updated payment : {ariv.PAYMENTAMT}\n");
                 }
@@ -77,18 +79,22 @@ namespace BillsExport.Utils
             sysdocnodtl.nxtOffclrcpt();
 
             int dockey = arpm.nextDockey();
-            string offclrcpt = $"OR17-{sysdocnodtl.NEXTNUMBER.ToString().PadLeft(5,'0')}"; 
+            string offclrcpt = $"OR-{sysdocnodtl.NEXTNUMBER.ToString().PadLeft(5,'0')}"; 
 
             arpm.DOCKEY = dockey;
             arpm.CODE = $"'{code}'";
-            arpm.DOCNO = $"'{arpm.nextOR()}'";
+            // arpm.DOCNO = $"'{arpm.nextOR()}'"; 
+            arpm.DOCNO = $"'{offclrcpt}'";
             arpm.GLTRANSID = gltransid;
             arpm.DOCDATE = $"'{payment.billing_date}'";
             arpm.POSTDATE = $"'{payment.billing_date}'";
             arpm.TAXDATE = $"'{payment.billing_date}'";
             arpm.DESCRIPTION = $"'{payment.description}'";
-            arpm.AREA = $"'{payment.area}'";
-            arpm.PAYMENTMETHOD = "'310-210'";
+            arpm.AREA = $"'{code.Substring(0, code.IndexOf("-"))}'";
+            arpm.AGENT = "'----'";
+            arpm.CANCELLED = "'F'"; 
+            arpm.PROJECT = $"'{payment.project_code}'";
+            arpm.PAYMENTMETHOD = "'310-000'";
             arpm.JOURNAL = "'BANK'";
             arpm.CURRENCYRATE = 1;
             arpm.BANKCHARGE = 0;
@@ -97,7 +103,8 @@ namespace BillsExport.Utils
             arpm.UNAPPLIEDAMT = 0;
             arpm.GLTRANSID = gltransid;
             arpm.CHEQUENUMBER = "'KIPLEHOME - ONLINE'";
-           // arpm.UDF_POSTDN = "'F'";
+            arpm.UDF_POSTDN = "'F'";
+            arpm.UDF_TAXRATE = "'0%'";
             arpm.Add();
 
             // Increment for next official reciept
@@ -107,6 +114,8 @@ namespace BillsExport.Utils
             oreceipts.adyen_uuid = payment.uuid;
             oreceipts.or_no = offclrcpt;
             _khReceipts.Add(oreceipts);
+
+            _addGlcb(payment, offclrcpt, gltransid, code);
 
             return dockey;
         }
@@ -197,6 +206,44 @@ namespace BillsExport.Utils
             KipleHomeService kipleApi = new KipleHomeService();
             Console.WriteLine("Exporting receipts to kiple home...\n");
             kipleApi.exportReceipts(officialreceipts);
+        } 
+
+        private void _addGlcb(AppPayments payment,string ornumber, int gltransid, string code)
+        {
+            Glcb glCb = new Glcb(_dbpath);
+            glCb.DOCKEY = glCb.nextDockey();
+            glCb.DOCNO = $"'{ornumber}'";
+            glCb.DOCTYPE = "'OR'";
+            glCb.DOCDATE = $"'{payment.billing_date}'";
+            glCb.POSTDATE = $"'{payment.billing_date}'";
+            glCb.TAXDATE = $"'{payment.billing_date}'";
+            glCb.DESCRIPTION = $"'{payment.description}'";
+            glCb.PAYMENTMETHOD = "'310-000'";
+            glCb.JOURNAL = "'CASH'";
+            glCb.CHEQUENUMBER = "'KIPLEHOME - ONLINE'";
+            glCb.DOCAMT = _convertAmount(payment.amount_paid);
+            glCb.LOCALDOCAMT = _convertAmount(payment.amount_paid);
+            glCb.GLTRANSID = gltransid;
+            glCb.CANCELLED = "'F'"; 
+            glCb.AREA = $"'{code.Substring(0, code.IndexOf("-"))}'"; 
+            glCb.AGENT = "'----'";
+            glCb.PROJECT = $"'{payment.project_code}'";
+            glCb.Add();
+            _addGlcbdtl(payment, glCb.DOCKEY, code);
+        }
+
+        private void _addGlcbdtl(AppPayments payment, int glcbdockkey, string code)
+        {
+            Glcbdtl glcbdtl = new Glcbdtl(_dbpath);
+            glcbdtl.DTLKEY = glcbdtl.nextDTLKEY();
+            glcbdtl.DOCKEY = glcbdockkey;
+            glcbdtl.SEQ = 1;
+            glcbdtl.CODE = $"'{code}'";
+            glcbdtl.DESCRIPTION = $"'{payment.description}'";
+            glcbdtl.AMOUNT = _convertAmount(payment.amount_paid);
+            glcbdtl.LOCALAMOUNT = _convertAmount(payment.amount_paid);
+            glcbdtl.CURRENCYAMOUNT = _convertAmount(payment.amount_paid);
+            glcbdtl.Add();
         }
     }
 }

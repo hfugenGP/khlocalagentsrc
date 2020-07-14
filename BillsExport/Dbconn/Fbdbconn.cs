@@ -162,5 +162,29 @@ namespace BillsExport.Dbconn
             }
             return genId;
         }
+
+        protected int nextDTLKEY(string tableName)
+        {
+            int genId = 0;
+            string sql = String.Format("SELECT FIRST 1 DTLKEY FROM {0} ORDER BY DTLKEY DESC;", tableName);
+            FbDataReader fbDataReader = _executeCommand(sql);
+            if (fbDataReader.HasRows)
+            {
+                while (fbDataReader.Read())
+                {
+                    object[] values = new object[fbDataReader.FieldCount];
+                    fbDataReader.GetValues(values);
+                    try
+                    {
+                        genId = int.Parse(values[0].ToString()) + 2;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
+                }
+            }
+            return genId;
+        }
     }
 }
